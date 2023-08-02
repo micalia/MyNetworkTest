@@ -72,3 +72,6 @@ Plugins/*/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+# 클라이언트 배치 파일 추가
+NetworkTest_Window.bat
