@@ -20,10 +20,13 @@ void ULoginWidget::NativeConstruct()
 	btn_CreateSelection->OnClicked.AddDynamic(this, &ULoginWidget::OnClickedCreateSelection);
 	btn_FindSelection->OnClicked.AddDynamic(this, &ULoginWidget::OnClickedFindSelection);
 	btn_FindSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickFindButton);
+	btn_BackFromCreate->OnClicked.AddDynamic(this, &ULoginWidget::BackToFirstCanvas);
+	btn_BackFromFind->OnClicked.AddDynamic(this, &ULoginWidget::BackToFirstCanvas);
 
 	if (gi != nullptr)
 	{
 		gi->onSearchCompleted.AddDynamic(this, &ULoginWidget::AddRoomSlot);
+		gi->onFindButtonActivation.AddDynamic(this, &ULoginWidget::ChangeButtonActivation);
 	}
 }
 
@@ -48,6 +51,7 @@ void ULoginWidget::OnClickedCreateSelection()
 void ULoginWidget::OnClickedFindSelection()
 {
 	SwitchCanvas(2);
+	OnClickFindButton();
 }
 
 void ULoginWidget::OnClickFindButton()
@@ -76,6 +80,16 @@ void ULoginWidget::AddRoomSlot(FSessionSlotInfo slotInfo)
 		// 생성한 슬롯 위젯을 스크롤 박스에 자식으로 추가한다.
 		sb_RoomListBox->AddChild(sessionSlot);
 	}
+}
+
+void ULoginWidget::ChangeButtonActivation(bool bIsActivation)
+{
+	btn_FindSession->SetIsEnabled(bIsActivation);
+}
+
+void ULoginWidget::BackToFirstCanvas()
+{
+	ws_SessionUISwitch->SetActiveWidgetIndex(0);
 }
 
 void ULoginWidget::SwitchCanvas(int32 index)

@@ -25,7 +25,7 @@ public:
 
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSearchSignature, FSessionSlotInfo, sessionInfo);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FFindButtonSignature, bool, bIsActivation);
 
 UCLASS()
 class NETWORKTEST_API UNetGameInstance : public UGameInstance
@@ -43,6 +43,7 @@ public:
 	IOnlineSessionPtr sessionInterface;
 	TSharedPtr<FOnlineSessionSearch> sessionSearch;
 	FSearchSignature onSearchCompleted;
+	FFindButtonSignature onFindButtonActivation;
 
 	void CreateMySession(FText roomName, int32 playerCount);
 	void OnCreatedMySession(FName sessionName, bool bWasSuccessful);

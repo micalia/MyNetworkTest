@@ -44,6 +44,12 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
 	class UButton* btn_FindSelection;
 
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
+	class UButton* btn_BackFromCreate;
+
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
+	class UButton* btn_BackFromFind;
+
 	UPROPERTY(EditAnywhere, Category=MySettings)
 	TSubclassOf<class USessionInfoWidget> sessionInfoWidget;
 
@@ -65,6 +71,9 @@ public:
 	UFUNCTION()
 	void AddRoomSlot(struct FSessionSlotInfo slotInfo);
 
+	UFUNCTION()
+	void ChangeButtonActivation(bool bIsActivation);
+
 private:
 	UPROPERTY()
 	class UNetGameInstance* gi;
@@ -72,6 +81,9 @@ private:
 	UPROPERTY()
 	class USessionInfoWidget* sessionSlot;
 	
+	UFUNCTION()
+	void BackToFirstCanvas();
+
 	void SwitchCanvas(int32 index);
 };
 
