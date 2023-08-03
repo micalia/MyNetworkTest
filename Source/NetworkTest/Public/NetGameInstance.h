@@ -48,5 +48,6 @@ public:
 	void OnCreatedMySession(FName sessionName, bool bWasSuccessful);
 	void FindOtherSession();
 	void OnFindOtherSessions(bool bWasSuccessful);
-
+	void JoinSelectedSession(int32 index);
+	void OnJoinSelectedSession(FName sessionName, EOnJoinSessionCompleteResult::Type result);
 };

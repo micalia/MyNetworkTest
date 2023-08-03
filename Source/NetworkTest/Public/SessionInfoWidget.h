@@ -30,10 +30,16 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
 	class UButton* btn_Join;
 
+	int32 sessionIndex = 0;
+
+protected:
+	virtual void NativeConstruct() override;
 
 private:
 	UPROPERTY()
 	class UNetGameInstance* gi;
 
+	UFUNCTION()
+	void OnClickedJoinButton();
 };
 

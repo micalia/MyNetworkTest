@@ -55,6 +55,7 @@ void ULoginWidget::OnClickFindButton()
 	if (gi != nullptr)
 	{
 		gi->FindOtherSession();
+		sb_RoomListBox->ClearChildren();
 	}
 }
 
@@ -70,6 +71,7 @@ void ULoginWidget::AddRoomSlot(FSessionSlotInfo slotInfo)
 		sessionSlot->text_HostName->SetText(FText::FromString(slotInfo.hostName));
 		sessionSlot->text_PlayerCount->SetText(FText::FromString(slotInfo.playerCount));
 		sessionSlot->text_PingSpeed->SetText(FText::AsNumber(slotInfo.pingSpeed));
+		sessionSlot->sessionIndex = slotInfo.sessionIndex;
 
 		// 생성한 슬롯 위젯을 스크롤 박스에 자식으로 추가한다.
 		sb_RoomListBox->AddChild(sessionSlot);

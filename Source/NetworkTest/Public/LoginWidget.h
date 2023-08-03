@@ -44,7 +44,7 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
 	class UButton* btn_FindSelection;
 
-	UPROPERTY(EditAnywhere, meta=(BindWidget), Category=MySettings)
+	UPROPERTY(EditAnywhere, Category=MySettings)
 	TSubclassOf<class USessionInfoWidget> sessionInfoWidget;
 
 	UFUNCTION()
