@@ -80,7 +80,7 @@ void UNetGameInstance::FindOtherSession()
 	sessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
 
 	// 3. 세션의 검색량을 설정한다.
-	sessionSearch->MaxSearchResults = 10;
+	sessionSearch->MaxSearchResults = 50;
 
 	sessionInterface->FindSessions(0, sessionSearch.ToSharedRef());
 }
@@ -95,17 +95,24 @@ void UNetGameInstance::OnFindOtherSessions(bool bWasSuccessful)
 
 		UE_LOG(LogTemp, Warning, TEXT("Find Sessions: %d"), searchResults.Num());
 
-		for (FOnlineSessionSearchResult result : searchResults)
+		for (int32 i = 0; i  < searchResults.Num(); i++)
 		{
 			FString roomName;
-			result.Session.SessionSettings.Get(FName("ROOM_NAME"), roomName);
+			searchResults[i].Session.SessionSettings.Get(FName("ROOM_NAME"), roomName);
 			FString hostName;
-			result.Session.SessionSettings.Get(FName("HOST_NAME"), hostName);
-			int32 openNumber = result.Session.NumOpenPublicConnections;
-			int32 maxNumber = result.Session.SessionSettings.NumPublicConnections;
-			int32 pingSpeed = result.PingInMs;
+			searchResults[i].Session.SessionSettings.Get(FName("HOST_NAME"), hostName);
+			int32 openNumber = searchResults[i].Session.NumOpenPublicConnections;
+			int32 maxNumber = searchResults[i].Session.SessionSettings.NumPublicConnections;
+			int32 pingSpeed = searchResults[i].PingInMs;
 
 			UE_LOG(LogTemp, Warning, TEXT("Room Name: %s, HostName: %s, OpenNumber: %d, MaxNumber: %d, Ping Speed: %d"), *roomName, *hostName, openNumber, maxNumber, pingSpeed);
+
+			// 구조체 변수에 찾은 세션 정보를 입력한다.
+			FSessionSlotInfo slotInfo;
+			slotInfo.Set(roomName, hostName, FString::Printf(TEXT("(%d/%d)"), maxNumber - openNumber, maxNumber), pingSpeed, i);
+
+			// 세션 정보를 델리게이트로 전파한다.
+			onSearchCompleted.Broadcast(slotInfo);
 		}
 	}
 	else

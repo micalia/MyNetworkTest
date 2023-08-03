@@ -6,9 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "LoginWidget.generated.h"
 
-/**
- * 
- */
+
 UCLASS()
 class NETWORKTEST_API ULoginWidget : public UUserWidget
 {
@@ -46,7 +44,8 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
 	class UButton* btn_FindSelection;
 
-	class UNetGameInstance* gi;
+	UPROPERTY(EditAnywhere, meta=(BindWidget), Category=MySettings)
+	TSubclassOf<class USessionInfoWidget> sessionInfoWidget;
 
 	UFUNCTION()
 	void OnClickCreateButton();
@@ -63,8 +62,16 @@ public:
 	UFUNCTION()
 	void OnClickFindButton();
 
-private:
-	void SwitchCanvas(int32 index);
+	UFUNCTION()
+	void AddRoomSlot(struct FSessionSlotInfo slotInfo);
 
+private:
+	UPROPERTY()
+	class UNetGameInstance* gi;
+
+	UPROPERTY()
+	class USessionInfoWidget* sessionSlot;
+	
+	void SwitchCanvas(int32 index);
 };
 

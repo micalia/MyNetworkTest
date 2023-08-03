@@ -8,6 +8,8 @@
 #include "Components/EditableText.h"
 #include "NetGameInstance.h"
 #include "Components/WidgetSwitcher.h"
+#include "SessionInfoWidget.h"
+#include "Components/ScrollBox.h"
 
 void ULoginWidget::NativeConstruct()
 {
@@ -18,6 +20,11 @@ void ULoginWidget::NativeConstruct()
 	btn_CreateSelection->OnClicked.AddDynamic(this, &ULoginWidget::OnClickedCreateSelection);
 	btn_FindSelection->OnClicked.AddDynamic(this, &ULoginWidget::OnClickedFindSelection);
 	btn_FindSession->OnClicked.AddDynamic(this, &ULoginWidget::OnClickFindButton);
+
+	if (gi != nullptr)
+	{
+		gi->onSearchCompleted.AddDynamic(this, &ULoginWidget::AddRoomSlot);
+	}
 }
 
 void ULoginWidget::OnClickCreateButton()
@@ -48,6 +55,24 @@ void ULoginWidget::OnClickFindButton()
 	if (gi != nullptr)
 	{
 		gi->FindOtherSession();
+	}
+}
+
+void ULoginWidget::AddRoomSlot(FSessionSlotInfo slotInfo)
+{
+	// 슬롯 위젯을 생성한다.
+	sessionSlot = CreateWidget<USessionInfoWidget>(GetWorld(), sessionInfoWidget);
+
+	if (sessionSlot != nullptr)
+	{
+		// 슬롯 위젯의 각 요소에 슬롯 정보를 넣는다.
+		sessionSlot->text_RoomName->SetText(FText::FromString(slotInfo.roomName));
+		sessionSlot->text_HostName->SetText(FText::FromString(slotInfo.hostName));
+		sessionSlot->text_PlayerCount->SetText(FText::FromString(slotInfo.playerCount));
+		sessionSlot->text_PingSpeed->SetText(FText::AsNumber(slotInfo.pingSpeed));
+
+		// 생성한 슬롯 위젯을 스크롤 박스에 자식으로 추가한다.
+		sb_RoomListBox->AddChild(sessionSlot);
 	}
 }
 
