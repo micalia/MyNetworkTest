@@ -29,6 +29,6 @@ public:
 	void CreateMySession(FText roomName, int32 playerCount);
 	void OnCreatedMySession(FName sessionName, bool bWasSuccessful);
 	void FindOtherSession();
-
+	void OnFindOtherSessions(bool bWasSuccessful);
 
 };

@@ -37,6 +37,15 @@ public:
 	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
 	class UButton* btn_FindSession;
 
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
+	class UWidgetSwitcher* ws_SessionUISwitch;
+
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
+	class UButton* btn_CreateSelection;
+
+	UPROPERTY(VisibleAnywhere, meta=(BindWidget), Category=MySettings)
+	class UButton* btn_FindSelection;
+
 	class UNetGameInstance* gi;
 
 	UFUNCTION()
@@ -44,4 +53,18 @@ public:
 
 	UFUNCTION()
 	void OnSliderMoved(float value);
+
+	UFUNCTION()
+	void OnClickedCreateSelection();
+
+	UFUNCTION()
+	void OnClickedFindSelection();
+
+	UFUNCTION()
+	void OnClickFindButton();
+
+private:
+	void SwitchCanvas(int32 index);
+
 };
+
