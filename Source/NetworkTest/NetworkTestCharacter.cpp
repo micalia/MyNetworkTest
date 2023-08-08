@@ -11,6 +11,8 @@
 #include "EnhancedInputSubsystems.h"
 #include "Net/UnrealNetwork.h"	// 언리얼 네트워크 기능 사용을 위한 헤더
 #include "DrawDebugHelpers.h"
+#include "PistolActor.h"
+#include "BattleWidget.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -59,6 +61,16 @@ void ANetworkTestCharacter::BeginPlay()
 
 	myLocalRole = GetLocalRole();
 	myRemoteRole = GetRemoteRole();
+
+	// 메인 위젯 생성하기
+	if (GetController() != nullptr && GetController()->IsLocalPlayerController())
+	{
+		battle_UI = CreateWidget<UBattleWidget>(GetWorld(), battleWidget);
+		if (battle_UI != nullptr)
+		{
+			battle_UI->AddToViewport();
+		}
+	}
 }
 
 void ANetworkTestCharacter::Tick(float DeltaSeconds)
@@ -93,7 +105,7 @@ void ANetworkTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Look);
-
+		EnhancedInputComponent->BindAction(releaseWeapon, ETriggerEvent::Started, this, &ANetworkTestCharacter::ReleaseWeapon);
 	}
 
 }
@@ -128,11 +140,26 @@ void ANetworkTestCharacter::Look(const FInputActionValue& Value)
 // 점프 키를 눌렀을 때 실행될 함수
 void ANetworkTestCharacter::OnJump()
 {
-	Jump();
-	if (HasAuthority())
+	ServerOnJump();
+}
+
+// 'G' 키를 눌렀을 때 실행될 함수
+void ANetworkTestCharacter::ReleaseWeapon()
+{
+	if (owningWeapon != nullptr)
 	{
-		jumpCount++;
+		owningWeapon->ServerReleaseWeapon(this);
 	}
+}
+
+void ANetworkTestCharacter::ServerOnJump_Implementation()
+{
+	jumpCount++;
+}
+
+void ANetworkTestCharacter::MulticastOnJump_Implementation()
+{
+	Jump();
 }
 
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수
@@ -149,5 +176,6 @@ void ANetworkTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(ANetworkTestCharacter, timeTest);
 	//DOREPLIFETIME_CONDITION(ANetworkTestCharacter, timeTest, COND_OwnerOnly);
 	DOREPLIFETIME(ANetworkTestCharacter, jumpCount);
+	DOREPLIFETIME(ANetworkTestCharacter, owningWeapon);
 }
 

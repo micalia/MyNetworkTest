@@ -18,8 +18,8 @@ public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = MySettings)
-	bool bHasPistol = true;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = MySettings)
+	bool bHasPistol = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = MySettings)
 	float degree = 0;

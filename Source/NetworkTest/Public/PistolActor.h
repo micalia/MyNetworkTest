@@ -26,4 +26,23 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=MySettings)
 	class UStaticMeshComponent* meshComp;
 
+	UFUNCTION(Server, Reliable)
+	void ServerReleaseWeapon(class ANetworkTestCharacter* player);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastReleaseWeapon(class ANetworkTestCharacter* player);
+
+private:
+	UFUNCTION()
+	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(Server, Reliable)
+	void ServerGrabWeapon(class ANetworkTestCharacter* player);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastGrabWeapon(class ANetworkTestCharacter* player);
+
+	int32 ammo = 10;
+	int32 attackPower = 2;
+	float fireInterval = 0.2f;
 };

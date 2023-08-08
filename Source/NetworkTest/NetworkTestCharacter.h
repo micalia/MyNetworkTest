@@ -31,6 +31,9 @@ class ANetworkTestCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* LookAction;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* releaseWeapon;
+
 public:
 	ANetworkTestCharacter();
 	
@@ -48,7 +51,17 @@ protected:
 public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	FORCEINLINE void SetOwningWeapon(class APistolActor* pistol) { owningWeapon = pistol; }
+	FORCEINLINE class APistolActor* GetOwningWeapon() const { return owningWeapon; }
+	FORCEINLINE int32 GetAmmo() const { return ammo; }
+	FORCEINLINE void SetAmmo(int32 count) { ammo = count; }
+	FORCEINLINE void SetAttckPower(int32 damage) { attackPower = damage; }
+	FORCEINLINE void SetFireInterval(float time) { fireInterval = time; }
 
+
+	UPROPERTY(EditAnywhere, Category = MySettings)
+	TSubclassOf<class UBattleWidget> battleWidget;
+	class UBattleWidget* battle_UI;
 
 private:
 	enum ENetRole myLocalRole;
@@ -64,5 +77,19 @@ private:
 
 	void PrintLog();
 	void OnJump();
+	void ReleaseWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnJump();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnJump();
+
+	UPROPERTY(Replicated)
+	class APistolActor* owningWeapon;
+
+	int32 ammo = 10;
+	int32 attackPower = 2;
+	float fireInterval = 0.2f;
 };
 
