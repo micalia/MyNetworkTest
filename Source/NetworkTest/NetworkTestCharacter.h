@@ -34,6 +34,9 @@ class ANetworkTestCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* releaseWeapon;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* fire;
+
 public:
 	ANetworkTestCharacter();
 	
@@ -63,6 +66,13 @@ public:
 	TSubclassOf<class UBattleWidget> battleWidget;
 	class UBattleWidget* battle_UI;
 
+	void WeaponInfoReset();
+	void Fire();
+
+	UFUNCTION(Server, Unreliable, WithValidation)
+	void ServerFire();
+
+
 private:
 	enum ENetRole myLocalRole;
 	enum ENetRole myRemoteRole;
@@ -88,8 +98,13 @@ private:
 	UPROPERTY(Replicated)
 	class APistolActor* owningWeapon;
 
-	int32 ammo = 10;
-	int32 attackPower = 2;
-	float fireInterval = 0.2f;
+	UPROPERTY(Replicated)
+	int32 ammo = 0;
+
+	UPROPERTY(Replicated)
+	int32 attackPower = 0;
+
+	UPROPERTY(Replicated)
+	float fireInterval = 0.0f;
 };
 

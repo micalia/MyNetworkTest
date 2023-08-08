@@ -42,6 +42,7 @@ private:
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastGrabWeapon(class ANetworkTestCharacter* player);
 
+	UPROPERTY(Replicated)
 	int32 ammo = 10;
 	int32 attackPower = 2;
 	float fireInterval = 0.2f;

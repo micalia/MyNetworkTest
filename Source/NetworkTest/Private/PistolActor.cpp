@@ -60,6 +60,12 @@ void APistolActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 void APistolActor::ServerGrabWeapon_Implementation(ANetworkTestCharacter* player)
 {
 	player->SetOwningWeapon(this);
+	
+	// 총의 정보 넘기기
+	player->SetAmmo(ammo);
+	player->SetAttckPower(attackPower);
+	player->SetFireInterval(fireInterval);
+
 	MulticastGrabWeapon(player);
 	UE_LOG(LogTemp, Warning, TEXT("SeverGrabWeapon Call!"));
 }
@@ -85,6 +91,8 @@ void APistolActor::MulticastGrabWeapon_Implementation(ANetworkTestCharacter* pla
 
 void APistolActor::ServerReleaseWeapon_Implementation(class ANetworkTestCharacter* player)
 {
+	ammo = player->GetAmmo();
+	player->WeaponInfoReset();
 	MulticastReleaseWeapon(player);
 	player->SetOwningWeapon(nullptr);
 }
@@ -109,4 +117,11 @@ void APistolActor::MulticastReleaseWeapon_Implementation(class ANetworkTestChara
 	{
 		SetOwner(nullptr);
 	}
+}
+
+void APistolActor::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APistolActor, ammo);
 }

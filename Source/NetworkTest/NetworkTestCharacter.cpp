@@ -106,6 +106,7 @@ void ANetworkTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Look);
 		EnhancedInputComponent->BindAction(releaseWeapon, ETriggerEvent::Started, this, &ANetworkTestCharacter::ReleaseWeapon);
+		EnhancedInputComponent->BindAction(fire, ETriggerEvent::Started, this, &ANetworkTestCharacter::Fire);
 	}
 
 }
@@ -162,6 +163,54 @@ void ANetworkTestCharacter::MulticastOnJump_Implementation()
 	Jump();
 }
 
+void ANetworkTestCharacter::WeaponInfoReset()
+{
+	ammo = 0;
+	fireInterval = 0;
+	attackPower = 0;
+}
+
+void ANetworkTestCharacter::Fire()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Fire!"));
+
+	FVector startLoc = owningWeapon->meshComp->GetSocketLocation(FName("Fire Location"));
+	FVector endLoc = startLoc + FRotationMatrix(owningWeapon->meshComp->GetSocketRotation(FName("Fire Location"))).GetUnitAxis(EAxis::X) * 1000.0f;
+	FHitResult hitInfo;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(this);
+
+	if (GetWorld()->LineTraceSingleByChannel(hitInfo, startLoc, endLoc, ECC_Visibility, params))
+	{
+		if (hitInfo.GetActor()->IsA<ANetworkTestCharacter>())
+		{
+			/*if (HasAuthority())
+			{
+				ServerFire_Implementation();
+			}
+			else
+			{*/
+				ServerFire();
+			//}
+		}
+		UE_LOG(LogTemp, Warning, TEXT("Hit!"));
+	}
+
+	
+}
+
+void ANetworkTestCharacter::ServerFire_Implementation()
+{
+	ammo--;
+
+	// 데미지 처리
+}
+
+bool ANetworkTestCharacter::ServerFire_Validate()
+{
+	return true;
+}
+
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수
 void ANetworkTestCharacter::OnRep_JumpNotify()
 {
@@ -177,5 +226,8 @@ void ANetworkTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	//DOREPLIFETIME_CONDITION(ANetworkTestCharacter, timeTest, COND_OwnerOnly);
 	DOREPLIFETIME(ANetworkTestCharacter, jumpCount);
 	DOREPLIFETIME(ANetworkTestCharacter, owningWeapon);
+	DOREPLIFETIME(ANetworkTestCharacter, ammo);
+	DOREPLIFETIME(ANetworkTestCharacter, attackPower);
+	DOREPLIFETIME(ANetworkTestCharacter, fireInterval);
 }
 
