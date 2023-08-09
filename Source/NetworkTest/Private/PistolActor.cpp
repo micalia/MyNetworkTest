@@ -60,7 +60,7 @@ void APistolActor::OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* O
 void APistolActor::ServerGrabWeapon_Implementation(ANetworkTestCharacter* player)
 {
 	player->SetOwningWeapon(this);
-	
+
 	// 총의 정보 넘기기
 	player->SetAmmo(ammo);
 	player->SetAttckPower(attackPower);
@@ -76,18 +76,24 @@ void APistolActor::MulticastGrabWeapon_Implementation(ANetworkTestCharacter* pla
 	// 무기를 장착한다.
 	boxComp->SetSimulatePhysics(false);
 	FAttachmentTransformRules rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
-	AttachToComponent(player->GetMesh(), rules, FName("Pistol Loc"));
 
-	boxComp->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
-
-	// 애니메이션 변경하기
-	UPlayerAnimInstance* anim = Cast<UPlayerAnimInstance>(player->GetMesh()->GetAnimInstance());
-
-	if (anim != nullptr)
+	if (player != nullptr)
 	{
-		anim->bHasPistol = true;
+		AttachToComponent(player->GetMesh(), rules, FName("Pistol Loc"));
+
+		boxComp->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Ignore);
+
+		// 애니메이션 변경하기
+		UPlayerAnimInstance* anim = Cast<UPlayerAnimInstance>(player->GetMesh()->GetAnimInstance());
+
+		if (anim != nullptr)
+		{
+			anim->bHasPistol = true;
+		}
 	}
 }
+
+
 
 void APistolActor::ServerReleaseWeapon_Implementation(class ANetworkTestCharacter* player)
 {
@@ -102,7 +108,7 @@ void APistolActor::MulticastReleaseWeapon_Implementation(class ANetworkTestChara
 	FDetachmentTransformRules rules = FDetachmentTransformRules::KeepWorldTransform;
 	DetachFromActor(rules);
 	boxComp->SetSimulatePhysics(true);
-	
+
 	FTimerHandle colTimer;
 	GetWorldTimerManager().SetTimer(colTimer, FTimerDelegate::CreateLambda([&]() {
 		boxComp->SetCollisionResponseToChannel(ECC_GameTraceChannel2, ECR_Overlap);

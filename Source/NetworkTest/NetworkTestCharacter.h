@@ -19,6 +19,10 @@ class ANetworkTestCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 	
+	UPROPERTY(VisibleAnywhere, Category = MySettings, meta = (AllowPrivateAccess = "true"))
+	class UWidgetComponent* infoWidget;
+
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputMappingContext* DefaultMappingContext;
 
@@ -64,14 +68,33 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = MySettings)
 	TSubclassOf<class UBattleWidget> battleWidget;
+	
+	UPROPERTY(EditDefaultsOnly, Category=MySettings)
+	TArray<class UAnimMontage*> fire_montages;
+	
+	UPROPERTY(EditAnywhere, DisplayName="Max HP", Category = MySettings)
+	int32 maxHealth = 100;
+
 	class UBattleWidget* battle_UI;
 
 	void WeaponInfoReset();
 	void Fire();
 
+	UFUNCTION(Server, Reliable)
+	void ServerAddHealth(int32 value);
+
+	UFUNCTION(Server, Reliable)
+	void ServerDamagedHealth(int32 value);
+
+	FORCEINLINE int32 GetHealth() { return health; };
+
 	UFUNCTION(Server, Unreliable, WithValidation)
 	void ServerFire();
 
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastFire(bool hasAmmo);
+
+	
 
 private:
 	enum ENetRole myLocalRole;
@@ -106,5 +129,8 @@ private:
 
 	UPROPERTY(Replicated)
 	float fireInterval = 0.0f;
+
+	UPROPERTY(Replicated)
+	int32 health = 0;
 };
 

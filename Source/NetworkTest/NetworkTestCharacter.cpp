@@ -13,6 +13,7 @@
 #include "DrawDebugHelpers.h"
 #include "PistolActor.h"
 #include "BattleWidget.h"
+#include "Components/WidgetComponent.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -44,6 +45,9 @@ ANetworkTestCharacter::ANetworkTestCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
 	FollowCamera->bUsePawnControlRotation = false;
 
+	infoWidget = CreateDefaultSubobject<UWidgetComponent>(TEXT("Player Info Widget"));
+	infoWidget->SetupAttachment(GetMesh());
+
 	bReplicates = true;
 }
 
@@ -70,6 +74,11 @@ void ANetworkTestCharacter::BeginPlay()
 		{
 			battle_UI->AddToViewport();
 		}
+	}
+
+	if (HasAuthority())
+	{
+		health = maxHealth;
 	}
 }
 
@@ -100,7 +109,7 @@ void ANetworkTestCharacter::PrintLog()
 void ANetworkTestCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ANetworkTestCharacter::OnJump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Move);
@@ -172,43 +181,66 @@ void ANetworkTestCharacter::WeaponInfoReset()
 
 void ANetworkTestCharacter::Fire()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Fire!"));
-
-	FVector startLoc = owningWeapon->meshComp->GetSocketLocation(FName("Fire Location"));
-	FVector endLoc = startLoc + FRotationMatrix(owningWeapon->meshComp->GetSocketRotation(FName("Fire Location"))).GetUnitAxis(EAxis::X) * 1000.0f;
-	FHitResult hitInfo;
-	FCollisionQueryParams params;
-	params.AddIgnoredActor(this);
-
-	if (GetWorld()->LineTraceSingleByChannel(hitInfo, startLoc, endLoc, ECC_Visibility, params))
+	// RPC 오버 헤드 방지
+	if (HasAuthority())
 	{
-		if (hitInfo.GetActor()->IsA<ANetworkTestCharacter>())
-		{
-			/*if (HasAuthority())
-			{
-				ServerFire_Implementation();
-			}
-			else
-			{*/
-				ServerFire();
-			//}
-		}
-		UE_LOG(LogTemp, Warning, TEXT("Hit!"));
+		ServerFire_Implementation();
 	}
+	else
+	{
+		ServerFire();
+	}
+}
 
-	
+// 체력 회복 함수
+void ANetworkTestCharacter::ServerAddHealth_Implementation(int32 value)
+{
+	health = FMath::Min(health + value, maxHealth);
+}
+
+// 체력 감소(데미지) 함수
+void ANetworkTestCharacter::ServerDamagedHealth_Implementation(int32 value)
+{
+	health = FMath::Max(health - value, 0);
 }
 
 void ANetworkTestCharacter::ServerFire_Implementation()
 {
-	ammo--;
+	if (ammo > 0)
+	{
+		ammo--;
 
-	// 데미지 처리
+		FVector startLoc = owningWeapon->meshComp->GetSocketLocation(FName("Fire Location"));
+		FVector endLoc = startLoc + FRotationMatrix(owningWeapon->meshComp->GetSocketRotation(FName("Fire Location"))).GetUnitAxis(EAxis::X) * 1000.0f;
+		FHitResult hitInfo;
+		FCollisionQueryParams params;
+		params.AddIgnoredActor(this);
+
+		if (GetWorld()->LineTraceSingleByChannel(hitInfo, startLoc, endLoc, ECC_Visibility, params))
+		{
+			if (hitInfo.GetActor()->IsA<ANetworkTestCharacter>())
+			{
+				// 데미지 처리
+				Cast<ANetworkTestCharacter>(hitInfo.GetActor())->ServerDamagedHealth(attackPower);
+			}
+		}
+
+		MulticastFire(true);
+	}
+	else
+	{
+		MulticastFire(false);
+	}
 }
 
 bool ANetworkTestCharacter::ServerFire_Validate()
 {
 	return true;
+}
+
+void ANetworkTestCharacter::MulticastFire_Implementation(bool hasAmmo)
+{
+	PlayAnimMontage(fire_montages[(int)hasAmmo]);
 }
 
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수
@@ -229,5 +261,6 @@ void ANetworkTestCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>
 	DOREPLIFETIME(ANetworkTestCharacter, ammo);
 	DOREPLIFETIME(ANetworkTestCharacter, attackPower);
 	DOREPLIFETIME(ANetworkTestCharacter, fireInterval);
+	DOREPLIFETIME(ANetworkTestCharacter, health);
 }
 
