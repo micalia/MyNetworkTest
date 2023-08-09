@@ -26,11 +26,18 @@ public:
 	UPROPERTY(VisibleAnywhere, Category=MySettings)
 	class UStaticMeshComponent* meshComp;
 
+	UPROPERTY(EditDefaultsOnly, Category = MySettings)
+	TSubclassOf<class ABulletActor> bullet;
+
+	UFUNCTION()
+	void FireBullet(class ANetworkTestCharacter* player);
+
 	UFUNCTION(Server, Reliable)
 	void ServerReleaseWeapon(class ANetworkTestCharacter* player);
 
 	UFUNCTION(NetMulticast, Reliable)
 	void MulticastReleaseWeapon(class ANetworkTestCharacter* player);
+
 
 private:
 	UFUNCTION()
@@ -45,5 +52,5 @@ private:
 	UPROPERTY(Replicated)
 	int32 ammo = 10;
 	int32 attackPower = 20;
-	float fireInterval = 0.2f;
+	float fireInterval = 0.5f;
 };

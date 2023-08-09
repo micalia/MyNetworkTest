@@ -33,7 +33,7 @@ void AOwnerTestActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	PrintLog();
+	//PrintLog();
 
 	// 만일, 내가 서버에 있는 액터라면...
 	if (HasAuthority())

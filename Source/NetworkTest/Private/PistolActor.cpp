@@ -7,6 +7,7 @@
 #include "Net/UnrealNetwork.h"
 #include "../NetworkTestCharacter.h"
 #include "PlayerAnimInstance.h"
+#include "BulletActor.h"
 
 
 APistolActor::APistolActor()
@@ -93,7 +94,18 @@ void APistolActor::MulticastGrabWeapon_Implementation(ANetworkTestCharacter* pla
 	}
 }
 
+void APistolActor::FireBullet(ANetworkTestCharacter* player)
+{
+	if (bullet != nullptr)
+	{
+		FActorSpawnParameters params;
+		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
+		ABulletActor* spawnedBullet = GetWorld()->SpawnActor<ABulletActor>(bullet, meshComp->GetSocketLocation(FName("Fire Loc")), meshComp->GetSocketRotation(FName("Fire Loc")), params);
+
+		spawnedBullet->SetOwner(player);
+	}
+}
 
 void APistolActor::ServerReleaseWeapon_Implementation(class ANetworkTestCharacter* player)
 {

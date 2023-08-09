@@ -41,6 +41,9 @@ class ANetworkTestCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	class UInputAction* fire;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	class UInputAction* fire2;
+
 public:
 	ANetworkTestCharacter();
 	
@@ -79,9 +82,13 @@ public:
 	TSubclassOf<class UCameraShakeBase> hitShake;
 
 	class UBattleWidget* battle_UI;
+	bool bIsDead = false;
+
+
 
 	void WeaponInfoReset();
 	void Fire();
+	void FireType2();
 
 	UFUNCTION(Server, Reliable)
 	void ServerAddHealth(int32 value);
@@ -103,28 +110,20 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastHitProcess();
 
+	void DieProcess();
+
 private:
 	enum ENetRole myLocalRole;
 	enum ENetRole myRemoteRole;
+	bool bInDelay = false;
+	FTimerHandle fireDelay;
+
 	UPROPERTY(Replicated)
 	float timeTest = 0;
 
 	UPROPERTY(ReplicatedUsing=OnRep_JumpNotify)
 	int32 jumpCount = 0;
-
-	UFUNCTION()
-	void OnRep_JumpNotify();
-
-	void PrintLog();
-	void OnJump();
-	void ReleaseWeapon();
-
-	UFUNCTION(Server, Reliable)
-	void ServerOnJump();
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MulticastOnJump();
-
+	
 	UPROPERTY(Replicated)
 	class APistolActor* owningWeapon;
 
@@ -142,5 +141,21 @@ private:
 
 	UPROPERTY()
 	class UPlayerInfoWidget* info_UI;
+
+
+
+	UFUNCTION()
+	void OnRep_JumpNotify();
+
+	void PrintLog();
+	void OnJump();
+	void ReleaseWeapon();
+
+	UFUNCTION(Server, Reliable)
+	void ServerOnJump();
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastOnJump();
+
 };
 

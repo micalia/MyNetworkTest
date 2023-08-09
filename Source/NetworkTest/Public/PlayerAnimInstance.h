@@ -33,6 +33,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = MySettings)
 	float deltaRot = 0;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = MySettings)
+	bool bIsDead = false;
+
 private:
 	UPROPERTY()
 	class ANetworkTestCharacter* player;

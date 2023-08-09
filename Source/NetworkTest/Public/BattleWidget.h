@@ -21,6 +21,9 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidgetAnim), Transient, Category = MySettings)
 	class UWidgetAnimation* hitAnim;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = MySettings)
+	class UButton* btn_ExitSession;
+
 	void PlayHitAnim();
 
 protected:
@@ -29,4 +32,7 @@ protected:
 
 private:
 	class ANetworkTestCharacter* player;
+
+	UFUNCTION()
+	void OnExitSession();
 };

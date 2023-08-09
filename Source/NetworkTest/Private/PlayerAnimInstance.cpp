@@ -29,6 +29,8 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		// 상하 회전 계산
 		FRotator delta = (player->GetActorRotation() - player->GetBaseAimRotation()).GetNormalized();
 		deltaRot = delta.Pitch;
+
+		bIsDead = player->bIsDead;
 	}
 }
 

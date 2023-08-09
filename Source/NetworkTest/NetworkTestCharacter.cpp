@@ -16,6 +16,7 @@
 #include "Components/WidgetComponent.h"
 #include "PlayerInfoWidget.h"
 #include "Components/ProgressBar.h"
+#include "Components/Button.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -93,8 +94,13 @@ void ANetworkTestCharacter::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
+	if (bIsDead)
+	{
+		return;
+	}
+
 	// 디버깅용 로그 출력
-	PrintLog();
+	//PrintLog();
 
 	timeTest += DeltaSeconds;
 
@@ -103,6 +109,15 @@ void ANetworkTestCharacter::Tick(float DeltaSeconds)
 		info_UI->pb_healthBar->SetPercent((float)health / (float)maxHealth);
 	}
 
+	if (health <= 0 && !bIsDead)
+	{
+		bIsDead = true;
+		ReleaseWeapon();
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		GetCharacterMovement()->DisableMovement();
+		DieProcess();
+	}
 }
 
 
@@ -129,6 +144,7 @@ void ANetworkTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Look);
 		EnhancedInputComponent->BindAction(releaseWeapon, ETriggerEvent::Started, this, &ANetworkTestCharacter::ReleaseWeapon);
 		EnhancedInputComponent->BindAction(fire, ETriggerEvent::Started, this, &ANetworkTestCharacter::Fire);
+		EnhancedInputComponent->BindAction(fire2, ETriggerEvent::Started, this, &ANetworkTestCharacter::FireType2);
 	}
 
 }
@@ -208,6 +224,14 @@ void ANetworkTestCharacter::Fire()
 	}
 }
 
+void ANetworkTestCharacter::FireType2()
+{
+	if (owningWeapon != nullptr && !bIsDead)
+	{
+		owningWeapon->FireBullet(this);
+	}
+}
+
 // 체력 회복 함수
 void ANetworkTestCharacter::ServerAddHealth_Implementation(int32 value)
 {
@@ -223,6 +247,12 @@ void ANetworkTestCharacter::ServerDamagedHealth_Implementation(int32 value)
 
 void ANetworkTestCharacter::ServerFire_Implementation()
 {
+	if (GetWorldTimerManager().IsTimerActive(fireDelay))
+	{
+		return;
+	}
+
+
 	if (ammo > 0)
 	{
 		ammo--;
@@ -243,6 +273,11 @@ void ANetworkTestCharacter::ServerFire_Implementation()
 				hitPawn->ServerHitProcess();
 			}
 		}
+
+		
+		GetWorldTimerManager().SetTimer(fireDelay, FTimerDelegate::CreateLambda([&]() {
+			bInDelay = !bInDelay;
+			}), fireInterval, false);
 
 		MulticastFire(true);
 	}
@@ -275,6 +310,17 @@ void ANetworkTestCharacter::MulticastHitProcess_Implementation()
 	{
 		battle_UI->PlayHitAnim();
 		pc->ClientStartCameraShake(hitShake);
+	}
+}
+
+void ANetworkTestCharacter::DieProcess()
+{
+	if (GetController() != nullptr && GetController()->IsLocalPlayerController() && battle_UI != nullptr)
+	{
+		battle_UI->btn_ExitSession->SetVisibility(ESlateVisibility::Visible);
+		GetController<APlayerController>()->SetShowMouseCursor(true);
+		//GetController<APlayerController>()->SetInputMode( FInputModeUIOnly);
+		FollowCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 	}
 }
 
