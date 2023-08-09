@@ -75,6 +75,9 @@ public:
 	UPROPERTY(EditAnywhere, DisplayName="Max HP", Category = MySettings)
 	int32 maxHealth = 100;
 
+	UPROPERTY(EditDefaultsOnly, Category= MySettings)
+	TSubclassOf<class UCameraShakeBase> hitShake;
+
 	class UBattleWidget* battle_UI;
 
 	void WeaponInfoReset();
@@ -94,7 +97,11 @@ public:
 	UFUNCTION(NetMulticast, Unreliable)
 	void MulticastFire(bool hasAmmo);
 
-	
+	UFUNCTION(Server, Unreliable)
+	void ServerHitProcess();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastHitProcess();
 
 private:
 	enum ENetRole myLocalRole;
@@ -132,5 +139,8 @@ private:
 
 	UPROPERTY(Replicated)
 	int32 health = 0;
+
+	UPROPERTY()
+	class UPlayerInfoWidget* info_UI;
 };
 

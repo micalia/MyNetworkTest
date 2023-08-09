@@ -44,6 +44,6 @@ private:
 
 	UPROPERTY(Replicated)
 	int32 ammo = 10;
-	int32 attackPower = 2;
+	int32 attackPower = 20;
 	float fireInterval = 0.2f;
 };

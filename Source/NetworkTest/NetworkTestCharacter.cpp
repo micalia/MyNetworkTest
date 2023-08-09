@@ -14,6 +14,8 @@
 #include "PistolActor.h"
 #include "BattleWidget.h"
 #include "Components/WidgetComponent.h"
+#include "PlayerInfoWidget.h"
+#include "Components/ProgressBar.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -80,6 +82,11 @@ void ANetworkTestCharacter::BeginPlay()
 	{
 		health = maxHealth;
 	}
+
+	if (infoWidget != nullptr)
+	{
+		info_UI = Cast<UPlayerInfoWidget>(infoWidget->GetWidget());
+	}
 }
 
 void ANetworkTestCharacter::Tick(float DeltaSeconds)
@@ -90,6 +97,12 @@ void ANetworkTestCharacter::Tick(float DeltaSeconds)
 	PrintLog();
 
 	timeTest += DeltaSeconds;
+
+	if (info_UI != nullptr)
+	{
+		info_UI->pb_healthBar->SetPercent((float)health / (float)maxHealth);
+	}
+
 }
 
 
@@ -181,6 +194,9 @@ void ANetworkTestCharacter::WeaponInfoReset()
 
 void ANetworkTestCharacter::Fire()
 {
+	if (owningWeapon == nullptr)
+		return;
+
 	// RPC 오버 헤드 방지
 	if (HasAuthority())
 	{
@@ -202,6 +218,7 @@ void ANetworkTestCharacter::ServerAddHealth_Implementation(int32 value)
 void ANetworkTestCharacter::ServerDamagedHealth_Implementation(int32 value)
 {
 	health = FMath::Max(health - value, 0);
+	UE_LOG(LogTemp, Warning, TEXT("My Health is %d"), health);
 }
 
 void ANetworkTestCharacter::ServerFire_Implementation()
@@ -218,10 +235,12 @@ void ANetworkTestCharacter::ServerFire_Implementation()
 
 		if (GetWorld()->LineTraceSingleByChannel(hitInfo, startLoc, endLoc, ECC_Visibility, params))
 		{
-			if (hitInfo.GetActor()->IsA<ANetworkTestCharacter>())
+			//if (hitInfo.GetActor()->IsA<ANetworkTestCharacter>())
+			if(ANetworkTestCharacter* hitPawn = Cast<ANetworkTestCharacter>(hitInfo.GetActor()))
 			{
 				// 데미지 처리
-				Cast<ANetworkTestCharacter>(hitInfo.GetActor())->ServerDamagedHealth(attackPower);
+				hitPawn->ServerDamagedHealth(attackPower);
+				hitPawn->ServerHitProcess();
 			}
 		}
 
@@ -241,6 +260,22 @@ bool ANetworkTestCharacter::ServerFire_Validate()
 void ANetworkTestCharacter::MulticastFire_Implementation(bool hasAmmo)
 {
 	PlayAnimMontage(fire_montages[(int)hasAmmo]);
+}
+
+void ANetworkTestCharacter::ServerHitProcess_Implementation()
+{
+	MulticastHitProcess();
+}
+
+void ANetworkTestCharacter::MulticastHitProcess_Implementation()
+{
+	APlayerController* pc = GetController<APlayerController>();
+
+	if (pc != nullptr && pc->IsLocalPlayerController() && battle_UI != nullptr)
+	{
+		battle_UI->PlayHitAnim();
+		pc->ClientStartCameraShake(hitShake);
+	}
 }
 
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수

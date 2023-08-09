@@ -18,6 +18,12 @@ public:
 	UPROPERTY(VisibleAnywhere, meta = (BindWidget), Category = MySettings)
 	class UTextBlock* text_Ammo = 0;
 
+	UPROPERTY(VisibleAnywhere, meta = (BindWidgetAnim), Transient, Category = MySettings)
+	class UWidgetAnimation* hitAnim;
+
+	void PlayHitAnim();
+
+protected:
 	virtual void NativeConstruct() override;
 	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime);
 

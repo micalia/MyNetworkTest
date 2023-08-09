@@ -5,7 +5,6 @@
 #include "../NetworkTestCharacter.h"
 #include "Components/TextBlock.h"
 
-
 void UBattleWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
@@ -22,4 +21,9 @@ void UBattleWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 	{
 		text_Ammo->SetText(FText::AsNumber(player->GetAmmo()));
 	}
+}
+
+void UBattleWidget::PlayHitAnim()
+{
+	PlayAnimationForward(hitAnim);
 }
