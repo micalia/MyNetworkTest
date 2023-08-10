@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "Components/TimelineComponent.h"
 #include "NetworkTestCharacter.generated.h"
 
 
@@ -84,12 +85,18 @@ public:
 	class UBattleWidget* battle_UI;
 	bool bIsDead = false;
 
+	UPROPERTY(EditDefaultsOnly, Category= MySettings)
+	class UCurveFloat* dashCurve;
 
-
+	UPROPERTY(EditDefaultsOnly, Category= MySettings)
+	float dashPower = 10;
+	
+	FVector currentDir;
 	void WeaponInfoReset();
 	void Fire();
 	void FireType2();
 	void ChangeView();
+	
 
 	UFUNCTION(Server, Reliable)
 	void ServerAddHealth(int32 value);
@@ -118,6 +125,13 @@ private:
 	enum ENetRole myRemoteRole;
 	bool bInDelay = false;
 	FTimerHandle fireDelay;
+	struct FTimeline dashTimeline;
+
+	UFUNCTION(Server, Unreliable)
+	void ServerStartDash();
+	
+	UFUNCTION()
+	void OnDash(float Output);
 
 	UPROPERTY(Replicated)
 	float timeTest = 0;

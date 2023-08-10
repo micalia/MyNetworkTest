@@ -90,6 +90,13 @@ void ANetworkTestCharacter::BeginPlay()
 	{
 		info_UI = Cast<UPlayerInfoWidget>(infoWidget->GetWidget());
 	}
+
+	// 타임 라인 등록하기
+	FOnTimelineFloat onProgressDash;
+	onProgressDash.BindUFunction(this, FName("OnDash"));
+
+	dashTimeline.AddInterpFloat(dashCurve, onProgressDash);
+	dashTimeline.SetTimelineLength(1.0f);
 }
 
 void ANetworkTestCharacter::Tick(float DeltaSeconds)
@@ -100,6 +107,8 @@ void ANetworkTestCharacter::Tick(float DeltaSeconds)
 	{
 		return;
 	}
+
+	dashTimeline.TickTimeline(DeltaSeconds);
 
 	// 디버깅용 로그 출력
 	//PrintLog();
@@ -140,7 +149,7 @@ void ANetworkTestCharacter::SetupPlayerInputComponent(class UInputComponent* Pla
 {
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 
-		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ANetworkTestCharacter::OnJump);
+		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ANetworkTestCharacter::ServerStartDash);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Move);
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ANetworkTestCharacter::Look);
@@ -257,6 +266,7 @@ void ANetworkTestCharacter::ChangeView()
 
 }
 
+
 // 체력 회복 함수
 void ANetworkTestCharacter::ServerAddHealth_Implementation(int32 value)
 {
@@ -347,6 +357,27 @@ void ANetworkTestCharacter::DieProcess()
 		GetController<APlayerController>()->SetInputMode(FInputModeUIOnly());
 		FollowCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 	}
+}
+
+
+void ANetworkTestCharacter::ServerStartDash_Implementation()
+{
+	if (GetCharacterMovement()->Velocity.IsNearlyZero())
+	{
+		currentDir = GetActorForwardVector();
+	}
+	else
+	{
+		currentDir = GetCharacterMovement()->Velocity;
+	}
+	dashTimeline.PlayFromStart();
+}
+
+void ANetworkTestCharacter::OnDash(float Output)
+{
+	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, FString::Printf(TEXT("%.3f"), Output));
+		
+	GetCharacterMovement()->Velocity = currentDir * Output * dashPower;
 }
 
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수
