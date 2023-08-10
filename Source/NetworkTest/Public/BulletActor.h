@@ -6,6 +6,9 @@
 #include "GameFramework/Actor.h"
 #include "BulletActor.generated.h"
 
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE (FTestSignature);
+
 UCLASS()
 class NETWORKTEST_API ABulletActor : public AActor
 {
@@ -29,8 +32,18 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = MySettings)
 	class UProjectileMovementComponent* projectileMovement;
 
+	UPROPERTY(BlueprintReadWrite, BlueprintAssignable)
+	FTestSignature testDele;
+	
+	
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+	void TestFunc();
+
+
+
+
 private:
 	UFUNCTION()
 	void OnOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-
+	
 };

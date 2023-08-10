@@ -115,7 +115,7 @@ void ANetworkTestCharacter::Tick(float DeltaSeconds)
 	dashTimeline.TickTimeline(DeltaSeconds);
 
 	// 디버깅용 로그 출력
-	//PrintLog();
+	PrintLog();
 
 	timeTest += DeltaSeconds;
 
@@ -145,7 +145,16 @@ void ANetworkTestCharacter::PrintLog()
 	//const FString connectionString = GetNetConnection() != nullptr ? FString("Valid Connection") : FString("Invalid Connection");
 	//const FString printString = FString::Printf(TEXT("Local Role: %s\nRemote Role: %s\nOwner Name: %s\nNet Connection : %s"), *localRoleString, *remoteRoleString, *ownerString, *connectionString);
 
-	const FString printString = FString::Printf(TEXT("Time: %.2f\nJump Count: %d"), timeTest, jumpCount);
+	const FString GameModeBaseString = GetWorld()->GetAuthGameMode() != nullptr ? *FString("Valid") : *FString("Invalid");
+	const FString GameStateBaseString = GetWorld()->GetGameState() != nullptr ? *FString("Valid") : *FString("Invalid");
+	const FString PlayerStateString = GetPlayerState() != nullptr ? *FString("Valid") : *FString("Invalid");
+
+	APlayerController* pc = GetController<APlayerController>();
+	const FString PlayerControllerString = pc != nullptr ? *FString("Valid") : *FString("Invalid");
+	AHUD* hud = pc != nullptr ? pc->GetHUD() : nullptr;
+	const FString HUDString = hud != nullptr ? *FString("Valid") : *FString("Invalid");
+
+	const FString printString = FString::Printf(TEXT("GameModeBase: %s\nGameStateBase: %s\nPlayerState: %s\nPlayerController: %s\nHUD: %s"), *GameModeBaseString, *GameStateBaseString, *PlayerStateString, *PlayerControllerString, *HUDString);
 	DrawDebugString(GetWorld(), GetActorLocation(), printString, nullptr, FColor::White, 0, true);
 }
 
