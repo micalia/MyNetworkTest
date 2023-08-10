@@ -17,6 +17,8 @@
 #include "PlayerInfoWidget.h"
 #include "Components/ProgressBar.h"
 #include "Components/Button.h"
+#include "EngineUtils.h"
+#include "GameFramework/Actor.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -228,8 +230,31 @@ void ANetworkTestCharacter::FireType2()
 {
 	if (owningWeapon != nullptr && !bIsDead)
 	{
-		owningWeapon->FireBullet(this);
+		owningWeapon->ServerFireBullet(this);
 	}
+}
+
+void ANetworkTestCharacter::ChangeView()
+{
+	AActor* testCam = nullptr;
+
+	for (TActorIterator<AActor> it(GetWorld()); it; ++it)
+	{
+		AActor* cam = *it;
+		if (cam->GetName().Contains("CameraActor"))
+		{
+			testCam = cam;
+			
+		}
+
+		UE_LOG(LogTemp, Warning, TEXT("Find: %s"), *cam->GetName());
+	}
+
+	if (testCam != nullptr)
+	{
+		GetController<APlayerController>()->SetViewTargetWithBlend(testCam, 2.);
+	}
+
 }
 
 // 체력 회복 함수
@@ -319,7 +344,7 @@ void ANetworkTestCharacter::DieProcess()
 	{
 		battle_UI->btn_ExitSession->SetVisibility(ESlateVisibility::Visible);
 		GetController<APlayerController>()->SetShowMouseCursor(true);
-		//GetController<APlayerController>()->SetInputMode( FInputModeUIOnly);
+		GetController<APlayerController>()->SetInputMode(FInputModeUIOnly());
 		FollowCamera->PostProcessSettings.ColorSaturation = FVector4(0, 0, 0, 1);
 	}
 }

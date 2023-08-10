@@ -27,6 +27,7 @@ ABulletActor::ABulletActor()
 	projectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("Projectile Movement Component"));
 	projectileMovement->InitialSpeed = 1000.0f;
 	projectileMovement->MaxSpeed = 1000.0f;
+	projectileMovement->ProjectileGravityScale = 0;
 
 	bReplicates = true;
 	SetReplicateMovement(true);

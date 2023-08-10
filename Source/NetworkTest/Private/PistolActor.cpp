@@ -94,18 +94,28 @@ void APistolActor::MulticastGrabWeapon_Implementation(ANetworkTestCharacter* pla
 	}
 }
 
-void APistolActor::FireBullet(ANetworkTestCharacter* player)
+void APistolActor::ServerFireBullet_Implementation(ANetworkTestCharacter* player)
 {
 	if (bullet != nullptr)
 	{
-		FActorSpawnParameters params;
-		params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		if (player->GetAmmo() > 0)
+		{
+			FActorSpawnParameters params;
+			params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 
-		ABulletActor* spawnedBullet = GetWorld()->SpawnActor<ABulletActor>(bullet, meshComp->GetSocketLocation(FName("Fire Loc")), meshComp->GetSocketRotation(FName("Fire Loc")), params);
+			ABulletActor* spawnedBullet = GetWorld()->SpawnActor<ABulletActor>(bullet, meshComp->GetSocketLocation(FName("Fire Location")), meshComp->GetSocketRotation(FName("Fire Location")), params);
 
-		spawnedBullet->SetOwner(player);
+			spawnedBullet->SetOwner(player);
+			player->SetAmmo(player->GetAmmo() - 1);
+			player->MulticastFire(true);
+		}
+		else
+		{
+			player->MulticastFire(false);
+		}
 	}
 }
+
 
 void APistolActor::ServerReleaseWeapon_Implementation(class ANetworkTestCharacter* player)
 {

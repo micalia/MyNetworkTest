@@ -37,7 +37,7 @@ void UBattleWidget::OnExitSession()
 			player->GetController<APlayerController>()->ClientTravel("/Game/Maps/LobbyMap", ETravelType::TRAVEL_Absolute);
 		}
 	}
-
+	player->GetController<APlayerController>()->SetInputMode(FInputModeGameAndUI());
 }
 
 void UBattleWidget::PlayHitAnim()

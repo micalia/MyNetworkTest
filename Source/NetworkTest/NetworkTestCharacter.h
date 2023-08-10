@@ -89,6 +89,7 @@ public:
 	void WeaponInfoReset();
 	void Fire();
 	void FireType2();
+	void ChangeView();
 
 	UFUNCTION(Server, Reliable)
 	void ServerAddHealth(int32 value);

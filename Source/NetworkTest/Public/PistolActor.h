@@ -29,8 +29,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = MySettings)
 	TSubclassOf<class ABulletActor> bullet;
 
-	UFUNCTION()
-	void FireBullet(class ANetworkTestCharacter* player);
+	UFUNCTION(Server, Unreliable)
+	void ServerFireBullet(class ANetworkTestCharacter* player);
 
 	UFUNCTION(Server, Reliable)
 	void ServerReleaseWeapon(class ANetworkTestCharacter* player);
