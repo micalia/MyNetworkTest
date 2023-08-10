@@ -36,6 +36,14 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = MySettings)
 	bool bIsDead = false;
 
+	UPROPERTY(EditAnywhere, Category = MySettings)
+	class USoundBase* stepSound;
+
+
+
+	UFUNCTION()
+	void AnimNotify_FootSound();
+
 private:
 	UPROPERTY()
 	class ANetworkTestCharacter* player;

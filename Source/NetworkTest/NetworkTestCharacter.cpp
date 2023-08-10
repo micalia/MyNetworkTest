@@ -19,6 +19,7 @@
 #include "Components/Button.h"
 #include "EngineUtils.h"
 #include "GameFramework/Actor.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ANetworkTestCharacter::ANetworkTestCharacter()
@@ -94,8 +95,11 @@ void ANetworkTestCharacter::BeginPlay()
 	// 타임 라인 등록하기
 	FOnTimelineFloat onProgressDash;
 	onProgressDash.BindUFunction(this, FName("OnDash"));
+	FOnTimelineEvent onFinishDash;
+	onFinishDash.BindUFunction(this, FName("FinishDash"));
 
 	dashTimeline.AddInterpFloat(dashCurve, onProgressDash);
+	dashTimeline.SetTimelineFinishedFunc(onFinishDash);
 	dashTimeline.SetTimelineLength(1.0f);
 }
 
@@ -373,11 +377,34 @@ void ANetworkTestCharacter::ServerStartDash_Implementation()
 	dashTimeline.PlayFromStart();
 }
 
+void ANetworkTestCharacter::ServerEndDash_Implementation()
+{
+	MulticastEndDash();
+}
+
+void ANetworkTestCharacter::MulticastEndDash_Implementation()
+{
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), smokeFX, GetActorLocation() - FVector(0, 0, 30), FRotator::ZeroRotator, true);
+	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, FString::Printf(TEXT("Finish Event!")));
+}
+
+// 타임라인이 진행 중일 때 매 프레임마다 실행되는 함수
 void ANetworkTestCharacter::OnDash(float Output)
 {
-	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Cyan, FString::Printf(TEXT("%.3f"), Output));
-		
 	GetCharacterMovement()->Velocity = currentDir * Output * dashPower;
+}
+
+// 타임라인이 종료될 때 1회 실행되는 함수
+void ANetworkTestCharacter::FinishDash()
+{
+	if (HasAuthority())
+	{
+		ServerEndDash_Implementation();
+	}
+	else
+	{
+		ServerEndDash();
+	}
 }
 
 // jumpCount 값이 동기화로 인하여 변경될 때 실행되는 함수

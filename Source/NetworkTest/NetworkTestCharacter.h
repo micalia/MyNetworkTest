@@ -90,6 +90,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, Category= MySettings)
 	float dashPower = 10;
+
+	UPROPERTY(EditDefaultsOnly, Category= MySettings)
+	class UParticleSystem* smokeFX;
 	
 	FVector currentDir;
 	void WeaponInfoReset();
@@ -129,9 +132,18 @@ private:
 
 	UFUNCTION(Server, Unreliable)
 	void ServerStartDash();
+
+	UFUNCTION(Server, Unreliable)
+	void ServerEndDash();
+
+	UFUNCTION(NetMulticast, Unreliable)
+	void MulticastEndDash();
 	
 	UFUNCTION()
 	void OnDash(float Output);
+
+	UFUNCTION()
+	void FinishDash();
 
 	UPROPERTY(Replicated)
 	float timeTest = 0;

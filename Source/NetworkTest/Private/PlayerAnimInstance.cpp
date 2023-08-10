@@ -4,6 +4,7 @@
 #include "PlayerAnimInstance.h"
 #include "../NetworkTestCharacter.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 
 
 void UPlayerAnimInstance::NativeInitializeAnimation()
@@ -31,6 +32,15 @@ void UPlayerAnimInstance::NativeUpdateAnimation(float DeltaSeconds)
 		deltaRot = delta.Pitch;
 
 		bIsDead = player->bIsDead;
+	}
+}
+
+void UPlayerAnimInstance::AnimNotify_FootSound()
+{
+	if (stepSound != nullptr)
+	{
+		UGameplayStatics::PlaySoundAtLocation(GetWorld(), stepSound, player->GetActorLocation(), 5);
+		GEngine->AddOnScreenDebugMessage(-1, 1, FColor::Green, FString("Foot!"));
 	}
 }
 
